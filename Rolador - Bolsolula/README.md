@@ -93,3 +93,19 @@ inicialização para o Railway e não precisa de domínio público.
    `d20` em um canal do servidor em que a aplicação foi instalada.
 
 Use uma única instância do bot para evitar respostas duplicadas.
+
+## Hospedar na Discloud
+
+O pacote já inclui `discloud.config` com Python 3.11 e 100 MB de RAM.
+O plano gratuito pode suspender apps inativos.
+
+1. Extraia o pacote em uma pasta privada e crie `token.txt` ao lado de
+   `bot.py`. Cole somente o token do bot nesse arquivo.
+2. Faça um novo ZIP com os arquivos na raiz. Inclua `token.txt`, `bot.py`,
+   `dados.py`, `sete_mares.py`, `requirements.txt` e `discloud.config`.
+3. Envie esse ZIP diretamente pelo painel da Discloud. Mantenha essa cópia
+   com o token fora do GitHub e de pastas públicas.
+4. Confira se os logs mostram **Bot conectado como** e envie `d20` no Discord.
+
+Se os logs indicarem falta de memória, ajuste `RAM` de acordo com a cota do
+seu plano. Rolagens grandes podem usar mais memória.
