@@ -133,9 +133,10 @@ class RolagemSeteMares:
         dados = ", ".join(map(exibir_d10, sorted(self.dados, reverse=True)))
         partes = [
             f"`{sum(todos)}` ← [{dados}] {len(self.dados)}d10{sufixo}",
-            f"**Apostas:** {total} | **Rerrolagens:** {self.rerrolagens}",
+            f"**Apostas:** {total}",
         ]
         if self.troca is not None:
+            partes[-1] += f" | **Rerrolagens:** {self.rerrolagens}"
             anterior, novo = self.troca
             partes.append(f"**Dado rerrolado:** {exibir_d10(anterior)} → {exibir_d10(novo)}")
         if self.extras:
