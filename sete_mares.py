@@ -6,15 +6,15 @@ import re
 import numpy as np
 from scipy.optimize import Bounds, LinearConstraint, milp
 
-_PISCINA = re.compile(r"([0-9]{0,3})d10\s*(!\s*\?|\?\s*!|[!?])?", re.IGNORECASE)
+_PISCINA = re.compile(r"([0-9]{0,3})d10\s*(!\s*\?|\?\s*!|[!?])?(?:\s*(\(15\)))?", re.IGNORECASE)
 
 
 def agrupar_apostas(
-    dados: list[int], especializacao: bool
+    dados: list[int], especializacao: bool, dificuldade: int = 10
 ) -> tuple[list[tuple[tuple[int, ...], int]], list[int]]:
     """Maximiza apostas e, em empate, preserva mais dados e pontos."""
     disponiveis = Counter(dados)
-    if sum(dados) < 10:
+    if sum(dados) < dificuldade:
         return [], dados.copy()
 
     valores = sorted(disponiveis, reverse=True)
@@ -35,7 +35,8 @@ def agrupar_apostas(
             if grupo.count(valor) < disponiveis[valor]:
                 adicionar_grupos(limiar, apostas, (*grupo, valor), soma + valor, indice)
 
-    adicionar_grupos(10, 1)
+    if not especializacao or dificuldade < 15:
+        adicionar_grupos(dificuldade, 1)
     if especializacao:
         adicionar_grupos(15, 2)
 
@@ -94,6 +95,7 @@ class RolagemSeteMares:
     especializacao: bool
     troca: tuple[int, int] | None = None
     rerrolagens: int = 0
+    dificuldade: int = 10
 
     def rerrolar(self, valor: int | None = None) -> "RolagemSeteMares":
         todos = list(self.dados + self.extras)
@@ -123,13 +125,15 @@ class RolagemSeteMares:
             return "**10**" if valor == 10 else str(valor)
 
         todos = self.dados + self.extras
-        grupos, sobras = agrupar_apostas(list(todos), self.especializacao)
+        grupos, sobras = agrupar_apostas(list(todos), self.especializacao, self.dificuldade)
         total = sum(apostas for _, apostas in grupos)
         descricao = " · ".join(
             f"({' + '.join(map(exibir_d10, grupo))} = {sum(grupo)})" + (" ×2" if apostas == 2 else "")
             for grupo, apostas in grupos
         ) or "nenhuma"
         sufixo = ("!" if self.explosiva else "") + ("?" if self.especializacao else "")
+        if self.dificuldade != 10:
+            sufixo += f" ({self.dificuldade})"
         dados = ", ".join(map(exibir_d10, sorted(self.dados, reverse=True)))
         partes = [
             f"`\u00a0\u00a0{sum(todos)}\u00a0\u00a0` ← [{dados}] {len(self.dados)}d10{sufixo}",
@@ -141,9 +145,12 @@ class RolagemSeteMares:
             partes.append(f"**Dado rerrolado:** {exibir_d10(anterior)} → {exibir_d10(novo)}")
         if self.extras:
             partes.append(f"**Dados extras (!):** {', '.join(map(exibir_d10, sorted(self.extras, reverse=True)))}")
-        regra = "10 ou mais = 1 aposta."
-        if self.especializacao:
-            regra += " Grupos de 15 ou mais podem valer 2 apostas (×2)."
+        if self.especializacao and self.dificuldade == 15:
+            regra = "15 ou mais = 2 apostas (×2) com especialização."
+        else:
+            regra = f"{self.dificuldade} ou mais = 1 aposta."
+            if self.especializacao:
+                regra += " Grupos de 15 ou mais podem valer 2 apostas (×2)."
         calculo = "\n".join((
             f"**Cálculo de apostas ({total})**",
             regra,
@@ -168,4 +175,5 @@ def rolar_sete_mares(expressao: str) -> RolagemSeteMares | str | None:
         extras = explodir(dados.count(10), quantidade) if explosiva else ()
     except LimiteDeExplosoes as erro:
         return f"{erro} Role novamente."
-    return RolagemSeteMares(dados, extras, explosiva, "?" in opcoes)
+    dificuldade = 15 if correspondencia[3] else 10
+    return RolagemSeteMares(dados, extras, explosiva, "?" in opcoes, dificuldade=dificuldade)
