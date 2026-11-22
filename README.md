@@ -1,6 +1,6 @@
 # Bot de dados para Discord
 
-Envie uma expressão como mensagem comum. O bot responde no mesmo canal com os resultados de cada dado e o total. As mensagens de conversa ficam intactas.
+Envie uma expressão como mensagem comum. O bot responde diretamente à mensagem da rolagem, com o total antes dos dados, como `14` ← [14] 1d20. As mensagens de conversa ficam intactas.
 
 | Mensagem | Rolagem |
 | --- | --- |
@@ -17,7 +17,7 @@ A mensagem inteira deve ser uma expressão. Dados descartados aparecem riscados.
 1. Crie uma aplicação em **New Application** no [Discord Developer Portal](https://discord.com/developers/applications).
 2. Em **Bot → Privileged Gateway Intents**, habilite **Message Content Intent** e salve. Esse acesso permite ler as expressões enviadas como mensagens comuns.
 3. Na mesma página **Bot**, use **Reset Token** para obter o token. Guarde-o localmente em `token.txt` e mantenha-o privado.
-4. Em **Installation**, habilite **Guild Install** e selecione **Discord Provided Link**. Configure o escopo `bot` com as permissões **View Channels** e **Send Messages**. Abra o link de instalação e escolha um servidor que você gerencia.
+4. Em **Installation**, habilite **Guild Install** e selecione **Discord Provided Link**. Configure o escopo `bot` com as permissões **View Channels**, **Send Messages** e **Read Message History**. Abra o link de instalação e escolha um servidor que você gerencia.
 
 ## Rodar no computador
 

@@ -55,7 +55,8 @@ def preparar_resposta(texto: str) -> tuple[str, list[discord.File]]:
     if len(texto) <= 2000:
         return texto, []
     arquivo = discord.File(io.BytesIO(texto.encode("utf-8")), "rolagem.txt")
-    return texto.splitlines()[0], [arquivo]
+    resumo = " · ".join(texto.split(" · ", 2)[:2])
+    return f"{resumo[:1900]} · Detalhes no anexo.", [arquivo]
 
 
 def preparar_rerrolagem(rolagem: RolagemSeteMares, valor: int | None):
@@ -136,13 +137,15 @@ class BotDeDados(discord.Client):
             return
         if not isinstance(resultado, RolagemSeteMares):
             conteudo, arquivos = preparar_resposta(resultado)
-            await mensagem.channel.send(conteudo, files=arquivos)
+            await mensagem.reply(conteudo, files=arquivos, mention_author=False)
             return
 
         texto = await asyncio.to_thread(resultado.formatar)
         conteudo, arquivos = preparar_resposta(texto)
         botoes = BotoesRerrolagem(self)
-        publicada = await mensagem.channel.send(conteudo, files=arquivos, view=botoes)
+        publicada = await mensagem.reply(
+            conteudo, files=arquivos, view=botoes, mention_author=False,
+        )
         self.resultados[publicada.id] = ResultadoPublicado(
             mensagem.author.id, publicada, resultado, botoes,
         )

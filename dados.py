@@ -61,6 +61,6 @@ def rolar(mensagem: str) -> RolagemSeteMares | str | None:
             for i, valor in enumerate(dados)
         )
         sufixo = f"{modo}{manter}" if modo else ""
-        detalhes.append(f"{prefixo}{quantidade}d{faces}{sufixo} [{resultados}]")
+        detalhes.append(f"{prefixo}[{resultados}] {quantidade}d{faces}{sufixo}")
 
-    return f"🎲 **Total: {total}**\n{' '.join(detalhes)}"
+    return f"`{total}` ← {' '.join(detalhes)}"

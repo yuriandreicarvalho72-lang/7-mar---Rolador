@@ -124,18 +124,22 @@ class RolagemSeteMares:
             f"({' + '.join(map(str, grupo))} = {sum(grupo)})" + (" ×2" if apostas == 2 else "")
             for grupo, apostas in grupos
         ) or "nenhuma"
-        titulo = f"🎲 **Total: {sum(todos)} · Apostas: {total}**"
+        sufixo = ("!" if self.explosiva else "") + ("?" if self.especializacao else "")
+        dados = ", ".join(map(str, self.dados))
+        partes = [
+            f"`{sum(todos)}` ← [{dados}] {len(self.dados)}d10{sufixo}",
+            f"**Apostas:** {total}",
+        ]
         if self.troca is not None:
             anterior, novo = self.troca
-            titulo += f" · **Dado rerrolado: {anterior} → {novo}**"
-        linhas = [titulo, f"**Dados:** {', '.join(map(str, self.dados))}"]
+            partes.append(f"**Dado rerrolado:** {anterior} → {novo}")
         if self.extras:
-            linhas.append(f"**Dados extras (!):** {', '.join(map(str, self.extras))}")
-        linhas.extend((
+            partes.append(f"**Dados extras (!):** {', '.join(map(str, self.extras))}")
+        partes.extend((
             f"**Grupos:** {descricao}",
             f"**Sobras:** {', '.join(map(str, sobras)) or 'nenhuma'}",
         ))
-        return "\n".join(linhas)
+        return " · ".join(partes)
 
 
 def rolar_sete_mares(expressao: str) -> RolagemSeteMares | str | None:
