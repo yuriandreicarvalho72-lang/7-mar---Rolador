@@ -28,6 +28,7 @@ async def comando_ajuda(interaction: discord.Interaction):
         "**7º Mar · somente grupos simples de d10**\n"
         "• `8d10` agrupa os dados para obter o máximo de apostas. Use **Ver cálculo** para ver os grupos e as sobras. "
         "Cada grupo de 10 ou mais vale 1 aposta.\n"
+        "• `8d10 (15)` exige soma mínima de 15 por aposta. Coloque (15) depois de ! ou ? quando usar essas opções.\n"
         "• `8d10!` faz cada 10 explodir, gerando outro d10.\n"
         "• `8d10?` permite grupos de 15 ou mais que valem 2 apostas.\n"
         "• `8d10!?` ou `8d10?!` ativa as duas opções.\n\n"
