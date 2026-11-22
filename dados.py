@@ -57,7 +57,8 @@ def rolar(mensagem: str) -> RolagemSeteMares | str | None:
         incluidos = set(ordem[:manter])
         total += multiplicador * sum(dados[i] for i in incluidos)
         resultados = []
-        for i, valor in enumerate(dados):
+        for i in sorted(range(quantidade), key=dados.__getitem__, reverse=True):
+            valor = dados[i]
             exibicao = f"**{valor}**" if valor == faces else str(valor)
             resultados.append(exibicao if i in incluidos else f"~~{exibicao}~~")
         resultados_formatados = ", ".join(resultados)
