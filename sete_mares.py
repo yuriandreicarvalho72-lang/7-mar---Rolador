@@ -132,7 +132,7 @@ class RolagemSeteMares:
         sufixo = ("!" if self.explosiva else "") + ("?" if self.especializacao else "")
         dados = ", ".join(map(exibir_d10, sorted(self.dados, reverse=True)))
         partes = [
-            f"`{sum(todos)}` ← [{dados}] {len(self.dados)}d10{sufixo}",
+            f"`\u00a0\u00a0{sum(todos)}\u00a0\u00a0` ← [{dados}] {len(self.dados)}d10{sufixo}",
             f"**Apostas:** {total}",
         ]
         if self.troca is not None:
