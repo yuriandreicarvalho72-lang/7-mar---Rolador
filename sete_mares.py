@@ -119,27 +119,30 @@ class RolagemSeteMares:
         )
 
     def formatar(self) -> str:
+        def exibir_d10(valor: int) -> str:
+            return "**10**" if valor == 10 else str(valor)
+
         todos = self.dados + self.extras
         grupos, sobras = agrupar_apostas(list(todos), self.especializacao)
         total = sum(apostas for _, apostas in grupos)
         descricao = " · ".join(
-            f"({' + '.join(map(str, grupo))} = {sum(grupo)})" + (" ×2" if apostas == 2 else "")
+            f"({' + '.join(map(exibir_d10, grupo))} = {sum(grupo)})" + (" ×2" if apostas == 2 else "")
             for grupo, apostas in grupos
         ) or "nenhuma"
         sufixo = ("!" if self.explosiva else "") + ("?" if self.especializacao else "")
-        dados = ", ".join(map(str, self.dados))
+        dados = ", ".join(map(exibir_d10, self.dados))
         partes = [
             f"`{sum(todos)}` ← [{dados}] {len(self.dados)}d10{sufixo}",
             f"**Apostas:** {total} | **Rerrolagens:** {self.rerrolagens}",
         ]
         if self.troca is not None:
             anterior, novo = self.troca
-            partes.append(f"**Dado rerrolado:** {anterior} → {novo}")
+            partes.append(f"**Dado rerrolado:** {exibir_d10(anterior)} → {exibir_d10(novo)}")
         if self.extras:
-            partes.append(f"**Dados extras (!):** {', '.join(map(str, self.extras))}")
+            partes.append(f"**Dados extras (!):** {', '.join(map(exibir_d10, self.extras))}")
         partes.extend((
             f"**Grupos:** {descricao}",
-            f"**Sobras:** {', '.join(map(str, sobras)) or 'nenhuma'}",
+            f"**Sobras:** {', '.join(map(exibir_d10, sobras)) or 'nenhuma'}",
         ))
         return " · ".join(partes)
 
