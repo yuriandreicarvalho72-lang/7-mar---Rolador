@@ -118,7 +118,7 @@ class RolagemSeteMares:
             rerrolagens=self.rerrolagens + 1,
         )
 
-    def formatar(self) -> str:
+    def formatar(self) -> tuple[str, str]:
         def exibir_d10(valor: int) -> str:
             return "**10**" if valor == 10 else str(valor)
 
@@ -130,7 +130,7 @@ class RolagemSeteMares:
             for grupo, apostas in grupos
         ) or "nenhuma"
         sufixo = ("!" if self.explosiva else "") + ("?" if self.especializacao else "")
-        dados = ", ".join(map(exibir_d10, self.dados))
+        dados = ", ".join(map(exibir_d10, sorted(self.dados, reverse=True)))
         partes = [
             f"`{sum(todos)}` ← [{dados}] {len(self.dados)}d10{sufixo}",
             f"**Apostas:** {total} | **Rerrolagens:** {self.rerrolagens}",
@@ -139,12 +139,17 @@ class RolagemSeteMares:
             anterior, novo = self.troca
             partes.append(f"**Dado rerrolado:** {exibir_d10(anterior)} → {exibir_d10(novo)}")
         if self.extras:
-            partes.append(f"**Dados extras (!):** {', '.join(map(exibir_d10, self.extras))}")
-        partes.extend((
+            partes.append(f"**Dados extras (!):** {', '.join(map(exibir_d10, sorted(self.extras, reverse=True)))}")
+        regra = "10 ou mais = 1 aposta."
+        if self.especializacao:
+            regra += " Grupos de 15 ou mais podem valer 2 apostas (×2)."
+        calculo = "\n".join((
+            f"**Cálculo de apostas ({total})**",
+            regra,
             f"**Grupos:** {descricao}",
             f"**Sobras:** {', '.join(map(exibir_d10, sobras)) or 'nenhuma'}",
         ))
-        return " · ".join(partes)
+        return " · ".join(partes), calculo
 
 
 def rolar_sete_mares(expressao: str) -> RolagemSeteMares | str | None:
