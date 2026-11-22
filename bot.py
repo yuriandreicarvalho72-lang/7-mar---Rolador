@@ -26,7 +26,7 @@ async def comando_ajuda(interaction: discord.Interaction):
         "• `d20` rola um d20. `2d6+3` soma dois d6 e acrescenta 3.\n"
         "• `4d6kh3` soma os três maiores. `2d20kl1` mantém o menor.\n\n"
         "**7º Mar · somente grupos simples de d10**\n"
-        "• `8d10` agrupa os dados para obter o máximo de apostas e mostra as sobras. "
+        "• `8d10` agrupa os dados para obter o máximo de apostas. Use **Ver cálculo** para ver os grupos e as sobras. "
         "Cada grupo de 10 ou mais vale 1 aposta.\n"
         "• `8d10!` faz cada 10 explodir, gerando outro d10.\n"
         "• `8d10?` permite grupos de 15 ou mais que valem 2 apostas.\n"
@@ -47,6 +47,7 @@ class ResultadoPublicado:
     autor_id: int
     mensagem: discord.Message
     rolagem: RolagemSeteMares
+    calculo: str
     botoes: discord.ui.View
     trava: asyncio.Lock = field(default_factory=asyncio.Lock)
 
@@ -55,13 +56,14 @@ def preparar_resposta(texto: str) -> tuple[str, list[discord.File]]:
     if len(texto) <= 2000:
         return texto, []
     arquivo = discord.File(io.BytesIO(texto.encode("utf-8")), "rolagem.txt")
-    resumo = " · ".join(texto.split(" · ", 2)[:2])
+    resumo = " · ".join(texto.splitlines()[0].split(" · ", 2)[:2])
     return f"{resumo[:1900]} · Detalhes no anexo.", [arquivo]
 
 
 def preparar_rerrolagem(rolagem: RolagemSeteMares, valor: int | None):
     nova = rolagem.rerrolar(valor)
-    return nova, nova.formatar()
+    resumo, calculo = nova.formatar()
+    return nova, resumo, calculo
 
 
 class BotoesRerrolagem(discord.ui.View):
@@ -105,6 +107,17 @@ class BotoesRerrolagem(discord.ui.View):
         await interacao.response.send_message("Escolha um valor da pool.", view=painel, ephemeral=True)
 
 
+    @discord.ui.button(label="Ver cálculo", style=discord.ButtonStyle.secondary)
+    async def ver_calculo(self, interacao: discord.Interaction, _: discord.ui.Button):
+        resultado = self.bot.resultados.get(interacao.message.id)
+        if resultado is None:
+            await interacao.response.send_message("🎲 O cálculo dessa rolagem expirou.", ephemeral=True)
+            return
+
+        conteudo, arquivos = preparar_resposta(resultado.calculo)
+        await interacao.response.send_message(conteudo, files=arquivos, ephemeral=True)
+
+
 class BotDeDados(discord.Client):
     def __init__(self, **opcoes):
         super().__init__(**opcoes)
@@ -140,14 +153,14 @@ class BotDeDados(discord.Client):
             await mensagem.reply(conteudo, files=arquivos, mention_author=False)
             return
 
-        texto = await asyncio.to_thread(resultado.formatar)
+        texto, calculo = await asyncio.to_thread(resultado.formatar)
         conteudo, arquivos = preparar_resposta(texto)
         botoes = BotoesRerrolagem(self)
         publicada = await mensagem.reply(
             conteudo, files=arquivos, view=botoes, mention_author=False,
         )
         self.resultados[publicada.id] = ResultadoPublicado(
-            mensagem.author.id, publicada, resultado, botoes,
+            mensagem.author.id, publicada, resultado, calculo, botoes,
         )
         if len(self.resultados) > 1000:
             _, antigo = self.resultados.popitem(last=False)
@@ -181,7 +194,7 @@ class BotDeDados(discord.Client):
             if self.resultados.get(mensagem_id) is not resultado:
                 return "🎲 Esse resultado não está mais disponível para rerrolagem."
             try:
-                nova, texto = await asyncio.to_thread(preparar_rerrolagem, resultado.rolagem, valor)
+                nova, texto, calculo = await asyncio.to_thread(preparar_rerrolagem, resultado.rolagem, valor)
             except DadoAusente as erro:
                 return str(erro)
             except LimiteDeExplosoes as erro:
@@ -198,6 +211,7 @@ class BotDeDados(discord.Client):
                 return "🎲 Não foi possível atualizar a mensagem. A rolagem ficou como estava."
             resultado.mensagem = editada
             resultado.rolagem = nova
+            resultado.calculo = calculo
             return None
 
 
