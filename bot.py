@@ -151,14 +151,14 @@ class BotDeDados(discord.Client):
             return
         if not isinstance(resultado, RolagemSeteMares):
             conteudo, arquivos = preparar_resposta(resultado)
-            await mensagem.reply(conteudo, files=arquivos, mention_author=False)
+            await mensagem.reply(conteudo, files=arquivos, mention_author=True)
             return
 
         texto, calculo = await asyncio.to_thread(resultado.formatar)
         conteudo, arquivos = preparar_resposta(texto)
         botoes = BotoesRerrolagem(self)
         publicada = await mensagem.reply(
-            conteudo, files=arquivos, view=botoes, mention_author=False,
+            conteudo, files=arquivos, view=botoes, mention_author=True,
         )
         self.resultados[publicada.id] = ResultadoPublicado(
             mensagem.author.id, publicada, resultado, calculo, botoes,
