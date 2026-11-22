@@ -93,6 +93,7 @@ class RolagemSeteMares:
     explosiva: bool
     especializacao: bool
     troca: tuple[int, int] | None = None
+    rerrolagens: int = 0
 
     def rerrolar(self, valor: int | None = None) -> "RolagemSeteMares":
         todos = list(self.dados + self.extras)
@@ -114,6 +115,7 @@ class RolagemSeteMares:
             dados=tuple(todos[:corte]),
             extras=tuple(todos[corte:]) + extras,
             troca=(anterior, novo),
+            rerrolagens=self.rerrolagens + 1,
         )
 
     def formatar(self) -> str:
@@ -128,7 +130,7 @@ class RolagemSeteMares:
         dados = ", ".join(map(str, self.dados))
         partes = [
             f"`{sum(todos)}` ← [{dados}] {len(self.dados)}d10{sufixo}",
-            f"**Apostas:** {total}",
+            f"**Apostas:** {total} | **Rerrolagens:** {self.rerrolagens}",
         ]
         if self.troca is not None:
             anterior, novo = self.troca
